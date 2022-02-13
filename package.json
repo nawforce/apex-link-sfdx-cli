@@ -1,9 +1,9 @@
 {
   "name": "apexlink",
-  "version": "1.4.0",
+  "version": "2.3.2",
   "author": "Kevin Jones <nawforce@gmail.com> (https://github.com/nawforce)",
   "bugs": "https://github.com/nawforce/apexlink/issues",
-  "description": "SFDX CLI plugin for Apexlink",
+  "description": "SFDX CLI plugin for Apexlink Salesforce metadata analysis library",
   "license": "BSD-3-Clause",
   "dependencies": {
     "@oclif/command": "^1",
@@ -63,6 +63,7 @@
     "posttest": "tslint -p test -t stylish",
     "prepack": "rm -rf lib && tsc -b && oclif-dev manifest && oclif-dev readme",
     "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\"",
-    "version": "oclif-dev readme && git add README.md"
+    "version": "oclif-dev readme && git add README.md",
+    "maven": "(cd jars; mvn -DoutputDirectory=. dependency:copy-dependencies -DincludeScope=runtime;)"
   }
 }

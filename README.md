@@ -1,8 +1,6 @@
 ## ApexLink
 
-ApexLink is a SFDX CLI plugin & Java library for static analysis of Salesforce Apex code aimed at improving developer 
-productivity. The core library is useful for any number of analysis problems while the CLI plugin acts as a demo of 
-current capability.
+SFDX CLI plugin for the [apex-link](https://github.com/nawforce/apex-link) Salesforce metadata static analysis library. This plugin provides a simple 'check' command that can be used to examine metadata for errors, in addition it can report on various warnings such as unused fields & methods or variable shadowing. The command can also be used to obtain Apex class dependencies in either CSV or JSON format.
  
 ### SFDX CLI
 
@@ -21,22 +19,14 @@ To perform a simple validity check use:
     sfdx apexlink:check <directory>
 
 This parses and performs semantic checks on the code and reports any errors, such as types not being found. The library
-contains a pretty comprehensive set of platform types that it validates against.
-
-More complex validations can be performed that support namespaced packages and multiple source directories, see the 
-command help for more details. This command does not require an sfdx project, if you omit the directory it will search 
-the current directory for metadata.  
+contains a pretty comprehensive set of platform types that it validates against. This command does not require an sfdx project, if you omit the directory it will search the current directory for metadata. To also see warnings add the argument "--verbose".
 
 ### Unused fields, properties & methods
 
 You can use the check command to report on unused fields, properties and methods of Apex classes. 
 
-    sfdx apexlink:check --zombies <directory>
+    sfdx apexlink:check --verbose --unused <directory>
 
-This analysis currently may return false positives for:
-*  Fields & Properties only bound to SOQL queries
-*  Properties only used by Visualforce Pages
-*  Fields, properties & methods only referenced from triggers.   
 
 ### Class dependencies
 
@@ -44,9 +34,7 @@ The check command can also report Apex class dependencies with:
 
     sfdx apexlink:check --depends --json <directory>
 
-If you omit the --json the dependency default format is CSV. Understanding dependencies is useful when analysing 
-[cold start behaviours](https://nawforce.blog/2019/02/25/apex-cold-starts-and-class-caching-misses/) but it also 
-provides the support for identifying unused methods and fields. 
+If you omit the --json the dependency default format is CSV.  
 
 ### Usage
 
@@ -60,7 +48,7 @@ $ npm install -g apexlink
 $ sfdx COMMAND
 running command...
 $ sfdx (-v|--version|version)
-apexlink/1.3.2 darwin-x64 node-v12.16.2
+apexlink/2.3.2 darwin-x64 node-v16.6.0
 $ sfdx --help [COMMAND]
 USAGE
   $ sfdx COMMAND
@@ -68,24 +56,26 @@ USAGE
 ```
 <!-- usagestop -->
 <!-- commands -->
-* [`sfdx apexlink:check [--zombie] [--depends] [--namespaces <string>] [--verbose] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-apexlinkcheck---zombie---depends---namespaces-string---verbose---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
+* [`sfdx apexlink:check [--depends] [--unused] [--nocache] [--debug] [--verbose] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-apexlinkcheck---depends---unused---nocache---debug---verbose---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
 
-## `sfdx apexlink:check [--zombie] [--depends] [--namespaces <string>] [--verbose] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
+## `sfdx apexlink:check [--depends] [--unused] [--nocache] [--debug] [--verbose] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
 Validate Apex code in current or passed directories
 
 ```
 USAGE
-  $ sfdx apexlink:check [--zombie] [--depends] [--namespaces <string>] [--verbose] [--json] [--loglevel 
+  $ sfdx apexlink:check [--depends] [--unused] [--nocache] [--debug] [--verbose] [--json] [--loglevel 
   trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
 ARGUMENTS
   DIRECTORY  directory to search for metadata files, defaults to current directory
 
 OPTIONS
-  --depends                                                                         output map of type dependencies
-                                                                                    rather than issues, CSV or JSON
-                                                                                    format
+  --debug                                                                           show debug log
+
+  --depends                                                                         output class dependencies rather
+                                                                                    than issues, in CSV (default) or
+                                                                                    JSON format
 
   --json                                                                            show output in json format (disables
                                                                                     --verbose)
@@ -93,21 +83,20 @@ OPTIONS
   --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
                                                                                     this command invocation
 
-  --namespaces=namespaces                                                           comma separated list of dependent
-                                                                                    package namespaces (without spaces)
+  --nocache                                                                         don't use cache during loading
 
-  --verbose                                                                         show progress messages
+  --unused                                                                          show unused messages, requires
+                                                                                    --verbose
 
-  --zombie                                                                          show warnings for unused fields &
-                                                                                    methods
+  --verbose                                                                         show warning messages
 
 EXAMPLES
   $ sfdx apexlink:check
   $ sfdx apexlink:check --verbose $HOME/myproject
-  $ sfdx apexlink:check --zombie --namespaces ns1,ns2 $HOME/myproject
+  $ sfdx apexlink:check --json --depends $HOME/myproject
 ```
 
-_See code: [src/commands/apexlink/check.ts](https://github.com/nawforce/apexlink/blob/v1.3.2/src/commands/apexlink/check.ts)_
+_See code: [src/commands/apexlink/check.ts](https://github.com/nawforce/apexlink/blob/v2.3.2/src/commands/apexlink/check.ts)_
 <!-- commandsstop -->
 
 [![Version](https://img.shields.io/npm/v/apexlink.svg)](https://npmjs.org/package/apexlink)
