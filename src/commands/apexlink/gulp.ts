@@ -13,8 +13,9 @@
  */
 
 import { SfdxCommand, flags } from '@salesforce/command';
-import { Messages } from '@salesforce/core';
+import { Connection, Messages, SfdxError } from '@salesforce/core';
 import { AnyJson } from '@salesforce/ts-types';
+import { Record } from 'jsforce';
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -40,6 +41,36 @@ export default class Gulp extends SfdxCommand {
   protected static requiresProject = true;
 
   public async run(): Promise<AnyJson> {
+    const connection = this.org.getConnection();
+    const namespaces = this.flags.namespaces || [];
+
+    await this.updateLabels(connection, namespaces);
+
     return Promise.resolve({});
   }
+
+  private async updateLabels(connection: Connection, namespaces: string[]): Promise<void> {
+    connection.tooling
+      .sobject('ExternalString')
+      .find<Label>(this.labelsQuery(namespaces), 'Name, NamespacePrefix')
+      .execute({ autoFetch: true, maxFetch: 100000 }, (err, records) => {
+        if (err) throw SfdxError.wrap(err);
+        this.writeLabels(records as any as Record<Label>[]);
+      });
+  }
+
+  private labelsQuery(namespaces: string[]): string {
+    const conditions = namespaces.map((namespace) => `(NamespacePrefix = '${namespace}' AND IsProtected = false)`);
+    conditions.push('NamespacePrefix = null');
+    return conditions.join(' OR ');
+  }
+
+  private writeLabels(labels: Record<Label>[]): void {
+    console.log(labels.length);
+  }
+}
+
+interface Label {
+  Name: string;
+  NamespacePrefix: string;
 }
