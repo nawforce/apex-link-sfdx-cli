@@ -12,11 +12,35 @@
     derived from this software without specific prior written permission.
  */
 
+import * as fs from 'fs';
+import * as path from 'path';
+
 export class StubFS {
-    newFiles: Map<string, string> = new Map()
+  private storePath: string;
 
-    public newFile(path: string, contents: string): void {
-        this.newFiles.set(path, contents)
-    }
+  newFiles: Map<string, string> = new Map();
 
+  constructor(workspacePath: string) {
+    this.storePath = this.createStore(workspacePath);
+  }
+
+  public newFile(path: string, contents: string): void {
+    this.newFiles.set(path, contents);
+  }
+
+  public sync(): void {
+    this.newFiles.forEach((contents, filePath) => {
+      const targetPath = path.join(this.storePath, filePath);
+      const directory = path.dirname(targetPath);
+      fs.mkdirSync(directory, { recursive: true });
+      fs.writeFileSync(targetPath, contents);
+    });
+    this.newFiles.clear();
+  }
+
+  private createStore(workspacePath: string): string {
+    const storeDirectory = path.join(workspacePath, '.apexlink', 'gulp');
+    fs.mkdirSync(storeDirectory, { recursive: true });
+    return storeDirectory;
+  }
 }

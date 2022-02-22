@@ -15,6 +15,7 @@
 import { SfdxCommand, flags } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
 import { AnyJson } from '@salesforce/ts-types';
+import { ClassReader } from '../../gulp/classes';
 import { LabelReader } from '../../gulp/labels';
 import { StubFS } from '../../gulp/stubfs';
 
@@ -45,14 +46,20 @@ export default class Gulp extends SfdxCommand {
     const connection = this.org.getConnection();
     const namespaces = this.flags.namespaces || [];
 
-    const stubFS = new StubFS();
+    const stubFS = new StubFS(this.project.getPath());
 
     const labelsReader = new LabelReader(connection, namespaces, stubFS).run();
+    const classesReader = new ClassReader(connection, namespaces, stubFS).run();
 
     const results = {
       labels: await labelsReader,
+      classes: await classesReader,
     };
-    console.log(stubFS)
+    for (const err in results) {
+      if (results[err] !== undefined) throw results[err];
+    }
+
+    stubFS.sync();
 
     return Promise.resolve({});
   }
