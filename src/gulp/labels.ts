@@ -14,31 +14,30 @@
 
 import * as path from 'path';
 import { Connection, SfdxError } from '@salesforce/core';
-import { Record } from 'jsforce';
 import { StubFS } from './stubfs';
 
 export class LabelReader {
-  connection: Connection;
-  namespaces: string[];
-  stubFS: StubFS;
+  private connection: Connection;
+  private namespaces: string[];
+  private stubFS: StubFS;
 
-  constructor(connection: Connection, namespaces: string[], stubFS: StubFS) {
+  public constructor(connection: Connection, namespaces: string[], stubFS: StubFS) {
     this.connection = connection;
     this.namespaces = namespaces;
     this.stubFS = stubFS;
   }
 
-  async run(): Promise<SfdxError | void> {
+  public async run(): Promise<SfdxError | void> {
     return this.connection.tooling
       .sobject('ExternalString')
       .find<LabelInfo>(this.labelsQuery(), 'Name, NamespacePrefix')
       .execute({ autoFetch: true, maxFetch: 100000 })
       .then(
         (records) => {
-          this.writeLabels(records as any as Record<LabelInfo>[]);
+          this.writeLabels(records);
         },
         (err) => {
-          return SfdxError.wrap(err);
+          if (typeof err === 'string' || err instanceof Error) return SfdxError.wrap(err);
         }
       );
   }
@@ -50,20 +49,24 @@ export class LabelReader {
   }
 
   private writeLabels(labels: LabelInfo[]): void {
-    const byNamespace = {};
+    const byNamespace: Map<string, string[]> = new Map();
 
-    for (const { Name, NamespacePrefix } of labels) {
-      if (!byNamespace[NamespacePrefix]) byNamespace[NamespacePrefix] = [];
-      byNamespace[NamespacePrefix].push(Name);
+    for (const label of labels) {
+      let namespaceLabels = byNamespace.get(label.NamespacePrefix);
+      if (namespaceLabels === undefined) {
+        namespaceLabels = [];
+        byNamespace.set(label.NamespacePrefix, namespaceLabels);
+      }
+      namespaceLabels.push(label.Name);
     }
 
-    for (const namespace in byNamespace) {
-      const targetDirectory = namespace === 'null' ? 'unmanaged' : namespace;
+    byNamespace.forEach((namespaceLabels, namespace) => {
+      const targetDirectory = namespace === null ? 'unmanaged' : namespace;
       this.stubFS.newFile(
         path.join(targetDirectory, 'CustomLabels.labels-meta.xml'),
-        this.createLabels(byNamespace[namespace])
+        this.createLabels(namespaceLabels)
       );
-    }
+    });
   }
 
   private createLabels(labelNames: string[]): string {

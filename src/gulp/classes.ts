@@ -14,31 +14,30 @@
 
 import * as path from 'path';
 import { Connection, SfdxError } from '@salesforce/core';
-import { Record } from 'jsforce';
 import { StubFS } from './stubfs';
 
 export class ClassReader {
-  connection: Connection;
-  namespaces: string[];
-  stubFS: StubFS;
+  private connection: Connection;
+  private namespaces: string[];
+  private stubFS: StubFS;
 
-  constructor(connection: Connection, namespaces: string[], stubFS: StubFS) {
+  public constructor(connection: Connection, namespaces: string[], stubFS: StubFS) {
     this.connection = connection;
     this.namespaces = namespaces;
     this.stubFS = stubFS;
   }
 
-  async run(): Promise<SfdxError | void> {
+  public async run(): Promise<SfdxError | void> {
     return this.connection.tooling
       .sobject('ApexClass')
       .find<ClassInfo>(this.query(), 'Name, NamespacePrefix, Body')
       .execute({ autoFetch: true, maxFetch: 100000 })
       .then(
         (records) => {
-          this.write(records as any as Record<ClassInfo>[]);
+          this.write(records);
         },
         (err) => {
-          return SfdxError.wrap(err);
+          if (typeof err === 'string' || err instanceof Error) return SfdxError.wrap(err);
         }
       );
   }
@@ -54,18 +53,18 @@ export class ClassReader {
 
     for (const cls of classes) {
       if (cls.Body !== '(hidden)') {
-        let classes = byNamespace.get(cls.NamespacePrefix);
-        if (classes === undefined) {
-          classes = [];
-          byNamespace.set(cls.NamespacePrefix, classes);
+        let namespaceClasses = byNamespace.get(cls.NamespacePrefix);
+        if (namespaceClasses === undefined) {
+          namespaceClasses = [];
+          byNamespace.set(cls.NamespacePrefix, namespaceClasses);
         }
-        classes.push(cls);
+        namespaceClasses.push(cls);
       }
     }
 
-    byNamespace.forEach((classes, namespace) => {
+    byNamespace.forEach((namespaceClasses, namespace) => {
       const targetDirectory = namespace === null ? 'unmanaged' : namespace;
-      for (const cls of classes) {
+      for (const cls of namespaceClasses) {
         this.stubFS.newFile(path.join(targetDirectory, 'classes', `${cls.Name}.cls`), cls.Body);
       }
     });
