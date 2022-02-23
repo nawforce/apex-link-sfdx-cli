@@ -45,7 +45,7 @@ export class ClassReader {
   private query(): string {
     const conditions = this.namespaces.map((namespace) => `NamespacePrefix = '${namespace}'`);
     conditions.push('NamespacePrefix = null');
-    return conditions.join(' OR ');
+    return `Status = 'Active' AND (${conditions.join(' OR ')})`;
   }
 
   private write(classes: ClassInfo[]): void {
