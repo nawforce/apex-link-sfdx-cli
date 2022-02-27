@@ -17,7 +17,7 @@ import { Connection } from 'jsforce';
 import { SfdxError } from '@salesforce/core';
 import { StubFS } from './stubfs';
 
-export class ClassReader {
+export class PageReader {
   private connection: Connection;
   private namespaces: string[];
   private stubFS: StubFS;
@@ -29,51 +29,57 @@ export class ClassReader {
   }
 
   public async run(): Promise<SfdxError | void> {
-    return this.connection.tooling
-      .sobject('ApexClass')
-      .find<ClassInfo>(this.query(), 'Name, NamespacePrefix, Body')
-      .execute({ autoFetch: true, maxFetch: 100000 })
-      .then(
-        (records) => {
-          this.write(records);
-        },
-        (err) => {
-          if (typeof err === 'string' || err instanceof Error) return SfdxError.wrap(err);
+    try {
+      const pages = await this.connection.tooling
+        .sobject('ApexPage')
+        .find<PageInfo>(this.query(), 'Name, NamespacePrefix, Markup')
+        .execute({ autoFetch: true, maxFetch: 100000 });
+      this.write(pages);
+    } catch (err) {
+      if (err instanceof Error) {
+        if (err.stack) {
+          return SfdxError.wrap(err.stack);
+        } else {
+          return SfdxError.wrap(err.toString());
         }
-      );
+      }
+      if (typeof err === 'string') {
+        return SfdxError.wrap(err);
+      }
+    }
   }
 
   private query(): string {
     const conditions = this.namespaces.map((namespace) => `NamespacePrefix = '${namespace}'`);
     conditions.push('NamespacePrefix = null');
-    return `Status = 'Active' AND (${conditions.join(' OR ')})`;
+    return conditions.join(' OR ');
   }
 
-  private write(classes: ClassInfo[]): void {
-    const byNamespace: Map<string, ClassInfo[]> = new Map();
+  private write(pages: PageInfo[]): void {
+    const byNamespace: Map<string, PageInfo[]> = new Map();
 
-    for (const cls of classes) {
-      if (cls.Body !== '(hidden)') {
-        let namespaceClasses = byNamespace.get(cls.NamespacePrefix);
-        if (namespaceClasses === undefined) {
-          namespaceClasses = [];
-          byNamespace.set(cls.NamespacePrefix, namespaceClasses);
+    for (const page of pages) {
+      if (page.Markup !== '(hidden)') {
+        let namespacePages = byNamespace.get(page.NamespacePrefix);
+        if (namespacePages === undefined) {
+          namespacePages = [];
+          byNamespace.set(page.NamespacePrefix, namespacePages);
         }
-        namespaceClasses.push(cls);
+        namespacePages.push(page);
       }
     }
 
-    byNamespace.forEach((namespaceClasses, namespace) => {
+    byNamespace.forEach((namespacePages, namespace) => {
       const targetDirectory = namespace === null ? 'unmanaged' : namespace;
-      for (const cls of namespaceClasses) {
-        this.stubFS.newFile(path.join(targetDirectory, 'classes', `${cls.Name}.cls`), cls.Body);
+      for (const page of namespacePages) {
+        this.stubFS.newFile(path.join(targetDirectory, 'pages', `${page.Name}.page`), page.Markup);
       }
     });
   }
 }
 
-interface ClassInfo {
+interface PageInfo {
   Name: string;
   NamespacePrefix: string;
-  Body: string;
+  Markup: string;
 }
