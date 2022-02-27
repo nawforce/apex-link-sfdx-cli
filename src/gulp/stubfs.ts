@@ -17,15 +17,14 @@ import * as path from 'path';
 
 export class StubFS {
   private storePath: string;
+  private newFiles: Map<string, string> = new Map();
 
-  newFiles: Map<string, string> = new Map();
-
-  constructor(workspacePath: string) {
+  public constructor(workspacePath: string) {
     this.storePath = this.createStore(workspacePath);
   }
 
-  public newFile(path: string, contents: string): void {
-    this.newFiles.set(path, contents);
+  public newFile(filePath: string, contents: string): void {
+    this.newFiles.set(filePath, contents);
   }
 
   public sync(): void {

@@ -15,8 +15,8 @@
 import { SfdxCommand, flags } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
 import { AnyJson } from '@salesforce/ts-types';
-import { ClassReader } from '../../gulp/classes';
-import { LabelReader } from '../../gulp/labels';
+//import { ClassReader } from '../../gulp/classes';
+//import { LabelReader } from '../../gulp/labels';
 import { SObjectReader } from '../../gulp/sobjects';
 import { StubFS } from '../../gulp/stubfs';
 
@@ -45,17 +45,20 @@ export default class Gulp extends SfdxCommand {
 
   public async run(): Promise<AnyJson> {
     const connection = this.org.getConnection();
+    connection.metadata.pollTimeout = 10*60*1000;
+    connection.metadata.pollInterval = 15*1000;
+
     const namespaces = (this.flags.namespaces as string[]) || [];
 
     const stubFS = new StubFS(this.project.getPath());
 
-    const labelsReader = new LabelReader(connection, namespaces, stubFS).run();
-    const classesReader = new ClassReader(connection, namespaces, stubFS).run();
+    //const labelsReader = new LabelReader(connection, namespaces, stubFS).run();
+    //const classesReader = new ClassReader(connection, namespaces, stubFS).run();
     const sobjectReader = new SObjectReader(connection, namespaces, stubFS).run();
 
     const results = {
-      labels: await labelsReader,
-      classes: await classesReader,
+      //labels: await labelsReader,
+      //classes: await classesReader,
       sobjects: await sobjectReader,
     };
     for (const err in results) {
