@@ -15,6 +15,7 @@
 import { SfdxCommand, flags } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
 import { AnyJson } from '@salesforce/ts-types';
+import { Connection } from 'jsforce';
 import { ComponentReader } from '../../gulp/components';
 import { FlowReader } from '../../gulp/flows';
 import { PageReader } from '../../gulp/pages';
@@ -51,16 +52,19 @@ export default class Gulp extends SfdxCommand {
     connection.metadata.pollTimeout = 10 * 60 * 1000;
     connection.metadata.pollInterval = 15 * 1000;
 
-    const namespaces = (this.flags.namespaces as string[]) || [];
+    const orgNamespace = await this.queryOrgNamespace(connection);
+    const uniqueNamespaces = new Set((this.flags.namespaces as string[]) || []);
+    if (orgNamespace != null) uniqueNamespaces.delete(orgNamespace);
+    const namespaces = Array.from(uniqueNamespaces.keys());
 
     const stubFS = new StubFS(this.project.getPath());
 
-    const labelsReader = new LabelReader(connection, namespaces, stubFS).run();
-    const classesReader = new ClassReader(connection, namespaces, stubFS).run();
-    const sobjectReader = new SObjectReader(connection, namespaces, stubFS).run();
-    const pageReader = new PageReader(connection, namespaces, stubFS).run();
-    const componentReader = new ComponentReader(connection, namespaces, stubFS).run();
-    const flowReader = new FlowReader(connection, namespaces, stubFS).run();
+    const labelsReader = new LabelReader(connection, orgNamespace, namespaces, stubFS).run();
+    const classesReader = new ClassReader(connection, orgNamespace, namespaces, stubFS).run();
+    const sobjectReader = new SObjectReader(connection, orgNamespace, namespaces, stubFS).run();
+    const pageReader = new PageReader(connection, orgNamespace, namespaces, stubFS).run();
+    const componentReader = new ComponentReader(connection, orgNamespace, namespaces, stubFS).run();
+    const flowReader = new FlowReader(connection, orgNamespace, namespaces, stubFS).run();
 
     const results = {
       labels: await labelsReader,
@@ -74,8 +78,19 @@ export default class Gulp extends SfdxCommand {
       if (results[err] !== undefined) throw results[err];
     }
 
-    stubFS.sync();
+    await stubFS.sync();
 
     return Promise.resolve({});
   }
+
+  private async queryOrgNamespace(connection: Connection): Promise<string | null> {
+    const organisations = await connection.sobject('Organization').find<Organization>('', 'NamespacePrefix').execute();
+
+    if (organisations.length === 1) return organisations[0].NamespacePrefix;
+    else return null;
+  }
+}
+
+interface Organization {
+  NamespacePrefix: string;
 }

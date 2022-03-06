@@ -18,11 +18,13 @@ import { StubFS } from './stubfs';
 
 export class LabelReader {
   private connection: Connection;
+  private orgNamespace: string;
   private namespaces: string[];
   private stubFS: StubFS;
 
-  public constructor(connection: Connection, namespaces: string[], stubFS: StubFS) {
+  public constructor(connection: Connection, orgNamespace: string, namespaces: string[], stubFS: StubFS) {
     this.connection = connection;
+    this.orgNamespace = orgNamespace;
     this.namespaces = namespaces;
     this.stubFS = stubFS;
   }
@@ -44,7 +46,7 @@ export class LabelReader {
 
   private labelsQuery(): string {
     const conditions = this.namespaces.map((namespace) => `(NamespacePrefix = '${namespace}' AND IsProtected = false)`);
-    conditions.push('NamespacePrefix = null');
+    conditions.push(`NamespacePrefix = ${this.orgNamespace == null ? 'null' : "'" + this.orgNamespace + "'"}`);
     return conditions.join(' OR ');
   }
 

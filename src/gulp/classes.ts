@@ -19,11 +19,13 @@ import { StubFS } from './stubfs';
 
 export class ClassReader {
   private connection: Connection;
+  private orgNamespace: string;
   private namespaces: string[];
   private stubFS: StubFS;
 
-  public constructor(connection: Connection, namespaces: string[], stubFS: StubFS) {
+  public constructor(connection: Connection, orgNamespace: string, namespaces: string[], stubFS: StubFS) {
     this.connection = connection;
+    this.orgNamespace = orgNamespace;
     this.namespaces = namespaces;
     this.stubFS = stubFS;
   }
@@ -45,7 +47,7 @@ export class ClassReader {
 
   private query(): string {
     const conditions = this.namespaces.map((namespace) => `NamespacePrefix = '${namespace}'`);
-    conditions.push('NamespacePrefix = null');
+    conditions.push(`NamespacePrefix = ${this.orgNamespace == null ? 'null' : "'" + this.orgNamespace + "'"}`);
     return `Status = 'Active' AND (${conditions.join(' OR ')})`;
   }
 
