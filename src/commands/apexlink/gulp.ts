@@ -32,7 +32,7 @@ export default class Gulp extends SfdxCommand {
 
   protected static flagsConfig = {
     namespaces: flags.array({
-      description: 'gulp metadata for the passed namespaces, unmanaged metadata is guled by default',
+      description: 'gulp metadata for these namespaces, unmanaged metadata is gulped by default',
     }),
     debug: flags.boolean({ description: 'show progress messages' }),
   };
