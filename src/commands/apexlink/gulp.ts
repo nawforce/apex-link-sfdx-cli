@@ -14,15 +14,9 @@
 
 import { SfdxCommand, flags } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
-import { AnyJson } from '@salesforce/ts-types';
-import { Connection } from 'jsforce';
-import { ComponentReader } from '../../gulp/components';
-import { FlowReader } from '../../gulp/flows';
-import { PageReader } from '../../gulp/pages';
-import { ClassReader } from '../../gulp/classes';
-import { LabelReader } from '../../gulp/labels';
-import { SObjectReader } from '../../gulp/sobjects';
-import { StubFS } from '../../gulp/stubfs';
+import { Gulp as GulpRunner } from 'apexlink-gulp';
+
+// import { AnyJson } from '@salesforce/ts-types';
 
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
@@ -47,50 +41,11 @@ export default class Gulp extends SfdxCommand {
   protected static supportsDevhubUsername = false;
   protected static requiresProject = true;
 
-  public async run(): Promise<AnyJson> {
+  public run(): Promise<void> {
     const connection = this.org.getConnection();
     connection.metadata.pollTimeout = 10 * 60 * 1000;
     connection.metadata.pollInterval = 15 * 1000;
 
-    const orgNamespace = await this.queryOrgNamespace(connection);
-    const uniqueNamespaces = new Set((this.flags.namespaces as string[]) || []);
-    if (orgNamespace != null) uniqueNamespaces.delete(orgNamespace);
-    const namespaces = Array.from(uniqueNamespaces.keys());
-
-    const stubFS = new StubFS(this.project.getPath());
-
-    const labelsReader = new LabelReader(connection, orgNamespace, namespaces, stubFS).run();
-    const classesReader = new ClassReader(connection, orgNamespace, namespaces, stubFS).run();
-    const sobjectReader = new SObjectReader(connection, orgNamespace, namespaces, stubFS).run();
-    const pageReader = new PageReader(connection, orgNamespace, namespaces, stubFS).run();
-    const componentReader = new ComponentReader(connection, orgNamespace, namespaces, stubFS).run();
-    const flowReader = new FlowReader(connection, orgNamespace, namespaces, stubFS).run();
-
-    const results = {
-      labels: await labelsReader,
-      classes: await classesReader,
-      sobjects: await sobjectReader,
-      pages: await pageReader,
-      componentReader: await componentReader,
-      flowReader: await flowReader,
-    };
-    for (const err in results) {
-      if (results[err] !== undefined) throw results[err];
-    }
-
-    await stubFS.sync();
-
-    return Promise.resolve({});
+    return GulpRunner.update(connection, this.project.getPath(), (this.flags.namespaces as string[]) || []);
   }
-
-  private async queryOrgNamespace(connection: Connection): Promise<string | null> {
-    const organisations = await connection.sobject('Organization').find<Organization>('', 'NamespacePrefix').execute();
-
-    if (organisations.length === 1) return organisations[0].NamespacePrefix;
-    else return null;
-  }
-}
-
-interface Organization {
-  NamespacePrefix: string;
 }
