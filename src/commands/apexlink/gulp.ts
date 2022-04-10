@@ -14,7 +14,7 @@
 
 import { SfdxCommand, flags } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
-import { Gulp as GulpRunner } from 'apexlink-gulp';
+import { Gulp as GulpRunner, Logger, LoggerStage } from 'apexlink-gulp';
 
 // import { AnyJson } from '@salesforce/ts-types';
 
@@ -42,10 +42,23 @@ export default class Gulp extends SfdxCommand {
   protected static requiresProject = true;
 
   public run(): Promise<void> {
+    const logger = new SfdxLogger();
     const connection = this.org.getConnection();
     connection.metadata.pollTimeout = 10 * 60 * 1000;
     connection.metadata.pollInterval = 15 * 1000;
 
-    return GulpRunner.update(connection, this.project.getPath(), (this.flags.namespaces as string[]) || []);
+    return GulpRunner.update(logger, connection, this.project.getPath(), (this.flags.namespaces as string[]) || []);
+  }
+}
+
+class SfdxLogger implements Logger {
+  public debug(message: string): void {
+    console.log(message);
+  }
+  public error(message: string): void {
+    console.log(message);
+  }
+  public complete(stage: LoggerStage): void {
+    console.log(stage);
   }
 }
