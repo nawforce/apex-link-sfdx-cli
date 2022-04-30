@@ -12,7 +12,7 @@
     derived from this software without specific prior written permission.
  */
 
-import { SfdxCommand, flags } from '@salesforce/command';
+import { SfdxCommand, flags, UX } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
 import { Gulp as GulpRunner, Logger, LoggerStage } from 'apexlink-gulp';
 
@@ -42,7 +42,7 @@ export default class Gulp extends SfdxCommand {
   protected static requiresProject = true;
 
   public run(): Promise<void> {
-    const logger = new SfdxLogger();
+    const logger = new SfdxLogger(this.ux);
     const connection = this.org.getConnection();
     connection.metadata.pollTimeout = 10 * 60 * 1000;
     connection.metadata.pollInterval = 15 * 1000;
@@ -53,10 +53,33 @@ export default class Gulp extends SfdxCommand {
 }
 
 class SfdxLogger implements Logger {
-  public debug(message: string): void {
-    console.log(message);
+  private ux: UX;
+  private phases = new Set([
+    LoggerStage.CLASSES,
+    LoggerStage.COMPONENTS,
+    LoggerStage.CUSTOM_SOBJECTS,
+    LoggerStage.FLOWS,
+    LoggerStage.LABELS,
+    LoggerStage.PAGES,
+    LoggerStage.STANDARD_SOBJECTS,
+  ]);
+
+  public constructor(ux: UX) {
+    this.ux = ux;
+    ux.startSpinner('Updating metadata in .apexlink', 'starting');
+    this.reportProgress();
   }
+
+  public debug(message: string): void {
+    this.ux.log(message);
+  }
+
   public complete(stage: LoggerStage): void {
-    console.log(stage);
+    this.phases.delete(stage);
+    this.reportProgress();
+  }
+
+  private reportProgress(): void {
+    this.ux.setSpinnerStatus(`Waiting for ${[...this.phases].join(', ')}`);
   }
 }
