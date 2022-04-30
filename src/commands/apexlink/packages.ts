@@ -12,7 +12,7 @@
     derived from this software without specific prior written permission.
  */
 
-import { SfdxCommand, flags } from '@salesforce/command';
+import { SfdxCommand } from '@salesforce/command';
 import { Messages } from '@salesforce/core';
 import { Gulp as GulpRunner } from 'apexlink-gulp';
 
@@ -40,7 +40,7 @@ export default class Packages extends SfdxCommand {
     connection.metadata.pollInterval = 15 * 1000;
 
     const runner = new GulpRunner();
-    const packages = await runner.getOrgNamespaces(connection);
+    const packages = await runner.getOrgPackageNamespaces(null, connection);
 
     if (this.flags.json) {
       this.ux.logJson(packages);

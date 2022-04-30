@@ -48,15 +48,12 @@ export default class Gulp extends SfdxCommand {
     connection.metadata.pollInterval = 15 * 1000;
 
     const runner = new GulpRunner();
-    return runner.update(logger, connection, this.project.getPath(), (this.flags.namespaces as string[]) || []);
+    return runner.update(this.project.getPath(), logger, connection, (this.flags.namespaces as string[]) || []);
   }
 }
 
 class SfdxLogger implements Logger {
   public debug(message: string): void {
-    console.log(message);
-  }
-  public error(message: string): void {
     console.log(message);
   }
   public complete(stage: LoggerStage): void {
