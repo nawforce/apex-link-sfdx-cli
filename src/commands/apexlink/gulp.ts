@@ -44,8 +44,6 @@ export default class Gulp extends SfdxCommand {
   public run(): Promise<void> {
     const logger = new SfdxLogger(this.ux);
     const connection = this.org.getConnection();
-    connection.metadata.pollTimeout = 10 * 60 * 1000;
-    connection.metadata.pollInterval = 15 * 1000;
 
     const runner = new GulpRunner();
     return runner.update(this.project.getPath(), logger, connection, (this.flags.namespaces as string[]) || []);
