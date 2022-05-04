@@ -13,8 +13,8 @@
  */
 
 import { SfdxCommand, flags, UX } from '@salesforce/command';
-import { Messages } from '@salesforce/core';
-import { Gulp as GulpRunner, Logger, LoggerStage } from 'apexlink-gulp';
+import { Messages, Logger } from '@salesforce/core';
+import { Gulp as GulpRunner, Logger as GulpLogger, LoggerStage } from 'apexlink-gulp';
 
 // import { AnyJson } from '@salesforce/ts-types';
 
@@ -41,17 +41,20 @@ export default class Gulp extends SfdxCommand {
   protected static supportsDevhubUsername = false;
   protected static requiresProject = true;
 
-  public run(): Promise<void> {
-    const logger = new SfdxLogger(this.ux);
+  public async run(): Promise<void> {
+    const sfdxLogger = await Logger.child('UX');
+    const gulpLogger = new LocalLogger(this.ux, sfdxLogger);
+
     const connection = this.org.getConnection();
 
     const runner = new GulpRunner();
-    return runner.update(this.project.getPath(), logger, connection, (this.flags.namespaces as string[]) || []);
+    return runner.update(this.project.getPath(), gulpLogger, connection, (this.flags.namespaces as string[]) || []);
   }
 }
 
-class SfdxLogger implements Logger {
+class LocalLogger implements GulpLogger {
   private ux: UX;
+  private logger: Logger;
   private phases = new Set([
     LoggerStage.CLASSES,
     LoggerStage.COMPONENTS,
@@ -62,14 +65,15 @@ class SfdxLogger implements Logger {
     LoggerStage.STANDARD_SOBJECTS,
   ]);
 
-  public constructor(ux: UX) {
+  public constructor(ux: UX, logger: Logger) {
     this.ux = ux;
+    this.logger = logger;
     ux.startSpinner('Updating metadata in .apexlink', 'starting');
     this.reportProgress();
   }
 
   public debug(message: string): void {
-    this.ux.log(message);
+    this.logger.info(message);
   }
 
   public complete(stage: LoggerStage): void {
