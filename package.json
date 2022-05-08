@@ -1,6 +1,6 @@
 {
   "name": "apexlink",
-  "version": "2.3.2",
+  "version": "2.3.3",
   "author": "Kevin Jones <nawforce@gmail.com> (https://github.com/nawforce)",
   "bugs": "https://github.com/nawforce/apexlink/issues",
   "description": "SFDX CLI plugin for Apexlink Salesforce metadata analysis library",

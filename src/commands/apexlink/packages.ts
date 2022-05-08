@@ -40,7 +40,7 @@ export default class Packages extends SfdxCommand {
     connection.metadata.pollInterval = 15 * 1000;
 
     const runner = new GulpRunner();
-    const packages = await runner.getOrgPackageNamespaces(null, connection);
+    const packages = await runner.getOrgPackageNamespaces(this.project.getPath(), connection);
 
     if (this.flags.json) {
       this.ux.logJson(packages);
