@@ -1287,10 +1287,10 @@ anymatch@~3.1.1, anymatch@~3.1.2:
     normalize-path "^3.0.0"
     picomatch "^2.0.4"
 
-apexlink-gulp@1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/apexlink-gulp/-/apexlink-gulp-1.1.0.tgz#63d0b0063f7adb1b9dd0273102cac4a67b54ff13"
-  integrity sha512-MF8PrRxIBYS0KgspsPT3sIzI6p3b86rXz+FEcgoPcLO5+gBJzhIiRwiXqSfIaG5ewLOvI6hE4gnJNQL1vQhGcg==
+apexlink-gulp@1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/apexlink-gulp/-/apexlink-gulp-1.1.1.tgz#b30a5782fa459a15b3589afcb5f73dce22466604"
+  integrity sha512-LT6uVjabxtAvlI3wTdi/70oANt5lb33lTTyKzFZFA0RfOiRGxPGL+PX14ElELYEg+qfUtF8sj1tEWffIwAlIng==
   dependencies:
     "@salesforce/core" "2.36.1"
     decompress "4.2.1"
