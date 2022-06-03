@@ -36,6 +36,16 @@ The check command can also report Apex class dependencies with:
 
 If you omit the --json the dependency default format is CSV.  
 
+
+### Downloading metadata
+
+To download metadata for use by apexlink use:
+
+  sfdx apexlink:gulp --namespaces="unmanaged,ns1"
+
+If you org does not have a namespace you can use "unmanaged" to download umanaged metadata, if the org does have a
+namespaces you should use it instead. The metadata will be stored in a .apexlink/gulp directory within your workspace. Note: to make use of the metadata you need to add settings to sfdx-project.json, see apex-assist README for instructions.   
+
 ### Usage
 
 <!-- toc -->
@@ -48,7 +58,7 @@ $ npm install -g apexlink
 $ sfdx COMMAND
 running command...
 $ sfdx (-v|--version|version)
-apexlink/2.3.2 darwin-x64 node-v16.6.0
+apexlink/2.3.4 darwin-x64 node-v16.6.0
 $ sfdx --help [COMMAND]
 USAGE
   $ sfdx COMMAND
@@ -57,6 +67,8 @@ USAGE
 <!-- usagestop -->
 <!-- commands -->
 * [`sfdx apexlink:check [--depends] [--unused] [--nocache] [--debug] [--verbose] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-apexlinkcheck---depends---unused---nocache---debug---verbose---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
+* [`sfdx apexlink:gulp [--namespaces <array>] [--debug] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-apexlinkgulp---namespaces-array---debug--u-string---apiversion-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
+* [`sfdx apexlink:packages [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-apexlinkpackages--u-string---apiversion-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
 
 ## `sfdx apexlink:check [--depends] [--unused] [--nocache] [--debug] [--verbose] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -96,7 +108,69 @@ EXAMPLES
   $ sfdx apexlink:check --json --depends $HOME/myproject
 ```
 
-_See code: [src/commands/apexlink/check.ts](https://github.com/nawforce/apexlink/blob/v2.3.2/src/commands/apexlink/check.ts)_
+_See code: [src/commands/apexlink/check.ts](https://github.com/nawforce/apexlink/blob/v2.3.4/src/commands/apexlink/check.ts)_
+
+## `sfdx apexlink:gulp [--namespaces <array>] [--debug] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
+
+Download metadata to enable apex-link semantic analysis
+
+```
+USAGE
+  $ sfdx apexlink:gulp [--namespaces <array>] [--debug] [-u <string>] [--apiversion <string>] [--json] [--loglevel 
+  trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+
+OPTIONS
+  -u, --targetusername=targetusername                                               username or alias for the target
+                                                                                    org; overrides default target org
+
+  --apiversion=apiversion                                                           override the api version used for
+                                                                                    api requests made by this command
+
+  --debug                                                                           show progress messages
+
+  --json                                                                            format output as json
+
+  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
+                                                                                    this command invocation
+
+  --namespaces=namespaces                                                           gulp metadata for these namespaces,
+                                                                                    unmanaged metadata is gulped by
+                                                                                    default
+
+EXAMPLES
+  $ sfdx apexlink:gulp
+  $ sfdx apexlink:gulp --debug --namespaces="ns1,ns2"
+```
+
+_See code: [src/commands/apexlink/gulp.ts](https://github.com/nawforce/apexlink/blob/v2.3.4/src/commands/apexlink/gulp.ts)_
+
+## `sfdx apexlink:packages [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
+
+Display information about installed packages
+
+```
+USAGE
+  $ sfdx apexlink:packages [-u <string>] [--apiversion <string>] [--json] [--loglevel 
+  trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+
+OPTIONS
+  -u, --targetusername=targetusername                                               username or alias for the target
+                                                                                    org; overrides default target org
+
+  --apiversion=apiversion                                                           override the api version used for
+                                                                                    api requests made by this command
+
+  --json                                                                            format output as json
+
+  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
+                                                                                    this command invocation
+
+EXAMPLES
+  $ sfdx apexlink:packages
+  $ sfdx apexlink:packages --debug"
+```
+
+_See code: [src/commands/apexlink/packages.ts](https://github.com/nawforce/apexlink/blob/v2.3.4/src/commands/apexlink/packages.ts)_
 <!-- commandsstop -->
 
 [![Version](https://img.shields.io/npm/v/apexlink.svg)](https://npmjs.org/package/apexlink)
