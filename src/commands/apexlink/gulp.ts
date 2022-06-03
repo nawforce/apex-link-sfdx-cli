@@ -13,7 +13,7 @@
  */
 
 import { SfdxCommand, flags, UX } from '@salesforce/command';
-import { Messages, Logger } from '@salesforce/core';
+import { Messages } from '@salesforce/core';
 import { Gulp as GulpRunner, Logger as GulpLogger, LoggerStage } from 'apexlink-gulp';
 
 // import { AnyJson } from '@salesforce/ts-types';
@@ -32,7 +32,7 @@ export default class Gulp extends SfdxCommand {
 
   protected static flagsConfig = {
     namespaces: flags.array({
-      description: 'gulp metadata for these namespaces, unmanaged metadata is gulped by default',
+      description: "gulp metadata for these namespaces, if not set 'unmanaged' is loaded",
     }),
     debug: flags.boolean({ description: 'show progress messages' }),
   };
@@ -42,19 +42,23 @@ export default class Gulp extends SfdxCommand {
   protected static requiresProject = true;
 
   public async run(): Promise<void> {
-    const sfdxLogger = await Logger.child('UX');
-    const gulpLogger = new LocalLogger(this.ux, sfdxLogger);
-
+    const gulpLogger = new LocalLogger(this.ux, (this.flags.debug as boolean) || false);
     const connection = this.org.getConnection();
 
     const runner = new GulpRunner();
-    return runner.update(this.project.getPath(), gulpLogger, connection, (this.flags.namespaces as string[]) || []);
+    return runner.update(
+      this.project.getPath(),
+      gulpLogger,
+      connection,
+      (this.flags.namespaces as string[]) || ['unmanaged'],
+      true
+    );
   }
 }
 
 class LocalLogger implements GulpLogger {
   private ux: UX;
-  private logger: Logger;
+  private debugOn: boolean;
   private phases = new Set([
     LoggerStage.CLASSES,
     LoggerStage.COMPONENTS,
@@ -65,15 +69,15 @@ class LocalLogger implements GulpLogger {
     LoggerStage.STANDARD_SOBJECTS,
   ]);
 
-  public constructor(ux: UX, logger: Logger) {
+  public constructor(ux: UX, debugOn: boolean) {
     this.ux = ux;
-    this.logger = logger;
+    this.debugOn = debugOn;
     ux.startSpinner('Updating metadata in .apexlink', 'starting');
     this.reportProgress();
   }
 
   public debug(message: string): void {
-    this.logger.info(message);
+    if (this.debugOn) this.ux.log(`${new Date().toLocaleString()} ${message}`);
   }
 
   public complete(stage: LoggerStage): void {
