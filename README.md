@@ -58,7 +58,7 @@ $ npm install -g apexlink
 $ sfdx COMMAND
 running command...
 $ sfdx (-v|--version|version)
-apexlink/2.3.4 darwin-x64 node-v16.6.0
+apexlink/2.3.5 darwin-x64 node-v16.6.0
 $ sfdx --help [COMMAND]
 USAGE
   $ sfdx COMMAND
@@ -108,7 +108,7 @@ EXAMPLES
   $ sfdx apexlink:check --json --depends $HOME/myproject
 ```
 
-_See code: [src/commands/apexlink/check.ts](https://github.com/nawforce/apexlink/blob/v2.3.4/src/commands/apexlink/check.ts)_
+_See code: [src/commands/apexlink/check.ts](https://github.com/nawforce/apexlink/blob/v2.3.5/src/commands/apexlink/check.ts)_
 
 ## `sfdx apexlink:gulp [--namespaces <array>] [--debug] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -134,15 +134,14 @@ OPTIONS
                                                                                     this command invocation
 
   --namespaces=namespaces                                                           gulp metadata for these namespaces,
-                                                                                    unmanaged metadata is gulped by
-                                                                                    default
+                                                                                    if not set 'unmanaged' is loaded
 
 EXAMPLES
   $ sfdx apexlink:gulp
   $ sfdx apexlink:gulp --debug --namespaces="ns1,ns2"
 ```
 
-_See code: [src/commands/apexlink/gulp.ts](https://github.com/nawforce/apexlink/blob/v2.3.4/src/commands/apexlink/gulp.ts)_
+_See code: [src/commands/apexlink/gulp.ts](https://github.com/nawforce/apexlink/blob/v2.3.5/src/commands/apexlink/gulp.ts)_
 
 ## `sfdx apexlink:packages [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -170,7 +169,7 @@ EXAMPLES
   $ sfdx apexlink:packages --debug"
 ```
 
-_See code: [src/commands/apexlink/packages.ts](https://github.com/nawforce/apexlink/blob/v2.3.4/src/commands/apexlink/packages.ts)_
+_See code: [src/commands/apexlink/packages.ts](https://github.com/nawforce/apexlink/blob/v2.3.5/src/commands/apexlink/packages.ts)_
 <!-- commandsstop -->
 
 [![Version](https://img.shields.io/npm/v/apexlink.svg)](https://npmjs.org/package/apexlink)
